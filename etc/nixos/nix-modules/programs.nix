@@ -2,6 +2,9 @@
 
 {
     environment.systemPackages = with pkgs; [
+        # Test
+        cbonsai
+        
         # --- Terimnal ---
         kitty
 
@@ -21,6 +24,7 @@
         gum
         eza
         bat
+        
         # --- Graphical Apps ---
         firefox     
         qutebrowser 

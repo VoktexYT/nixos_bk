@@ -3,13 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    impermanence.url = "github:nix-community/impermanence";
 
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   
-    impermanence.url = "github:nix-community/impermanence";
   };
 
   outputs =
@@ -28,7 +28,7 @@
         inherit system;
         specialArgs = { inherit inputs user; };
         modules = [
-          ./configuration.nix
+          /vault/etc/nixos/configuration.nix
           inputs.impermanence.nixosModules.impermanence
           home-manager.nixosModules.home-manager
           {

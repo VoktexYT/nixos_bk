@@ -12,7 +12,6 @@ trap "tput cnorm; exit" SIGINT SIGTERM EXIT
 clear
 
 # --- FUNCTIONS ---
-
 draw_title() {
     local width=$(($(tput cols) - 2))
     gum style --foreground "$COLOR_TITLE" --border-foreground "$COLOR_TITLE" \
@@ -37,12 +36,12 @@ launch_app() {
 }
 
 # --- EXECUTION ---
-
 draw_title
 
 MAIN_CHOICE=$(menu_choose "System" "Applications" "Monitor" "Network" "Power" "Exit")
 
 case $MAIN_CHOICE in
+
 "Applications")
     APP_CHOICE=$(menu_choose "Calendar" "Disk Manager" "File Explorer" "YouTube" "Kanso Code")
     case $APP_CHOICE in
@@ -55,16 +54,18 @@ case $MAIN_CHOICE in
     ;;
 
 "System")
-    SYS_CHOICE=$(menu_choose "Rebuild" "Hard Clean" "Refresh Desktop" "Information")
+    SYS_CHOICE=$(menu_choose "Rebuild" "Hard Clean" "Refresh Desktop" "Rollback" "Information")
     case $SYS_CHOICE in
-    "Rebuild") launch_app "kanso rebuild" "hold" ;;
-    "Hard Clean") launch_app "kanso hard-clean" "hold" ;;
+    "Rebuild") launch_app "kanso rebuild clear" "hold" ;;
+    "Hard Clean") launch_app "kanso hard-clean clear" "hold" ;;
     "Refresh Desktop") launch_app "kanso refresh-desktop" "hold" ;;
     "Information") launch_app "fastfetch" "hold" ;;
+    "Rollback") launch_app "kanso rollback clear" "hold" ;;
     esac
     ;;
 
 "Network") launch_app "impala" ;;
+
 "Monitor") launch_app "btop" ;;
 
 "Power")

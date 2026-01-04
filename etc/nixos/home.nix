@@ -18,22 +18,16 @@
     };
     
     xdg.configFile = {
-        "qutebrowser".source = ./app-configs/qutebrowser;
-        "helix".source = ./app-configs/helix;
-        "fish".source = ./app-configs/fish;
-        "hypr".source = ./app-configs/hyprland;
-        "waybar".source = ./app-configs/waybar;
-        "wofi".source = ./app-configs/wofi;
-        "kitty".source = ./app-configs/kitty;
-        "ytfzf".source = ./app-configs/ytfzf;
-        "zellij".source = ./app-configs/zellij;
+        "qutebrowser".source = config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/qutebrowser;
+        "helix".source =       config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/helix;
+        "fish".source =        config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/fish;
+        "hypr".source =        config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/hyprland;
+        "waybar".source =      config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/waybar;
+        "kitty".source =       config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/kitty;
+        "ytfzf".source =       config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/ytfzf;
+        "zellij".source =      config.lib.file.mkOutOfStoreSymlink /kanso/home-configs/zellij;
     };
 
-    home.packages = with pkgs; [
-        htop
-        fzf
-        ripgrep
-    ];
 
     programs.git = {
         enable = true;

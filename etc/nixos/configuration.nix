@@ -13,9 +13,10 @@
         ./nix-modules/fonts.nix
         ./nix-modules/env-variable.nix
         ./nix-modules/time.nix
+        ./nix-modules/settings.nix
         ./nix-modules/kanso-os-system.nix
-        ./kanso/kanso-cli.nix
-        ./kanso/kanso-pannel.nix
+        ./nix-modules/kanso-cli.nix
+        ./nix-modules/kanso-pannel.nix
     ];
     
     nix.settings.experimental-features = [ "nix-command" "flakes" ];

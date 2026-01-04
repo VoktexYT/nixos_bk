@@ -33,7 +33,6 @@
     hideMounts = true;
     directories = [
       "/var/lib/iwd"
-      "/var/log"
       "/var/lib/nixos"
       "/etc/nixos"
     ];
@@ -52,6 +51,12 @@
 
   fileSystems."/nix" = {
     device = "/vault/nix";
+    options = [ "nodev" "nosuid" "bind" ];
+    neededForBoot = true;
+  };
+
+  fileSystems."/kanso" = {
+    device = "/vault/kanso";
     options = [ "bind" ];
     neededForBoot = true;
   };

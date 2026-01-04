@@ -10,13 +10,13 @@
         HOME_URL=""
         SUPPORT_URL=""
         BUG_REPORT_URL=""
-        LOGO="${../kanso-logo.png}"
+        LOGO="${/vault/core/assets/kanso-logo.png}"
     '';
 
     environment.etc."fastfetch/config.jsonc".text = ''
         {
             "logo": {
-                "source": "${../kanso-logo.png}",
+                "source": "${/vault/core/assets/kanso-logo.png}",
                 "type": "kitty",
             },
 

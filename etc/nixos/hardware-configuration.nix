@@ -1,34 +1,54 @@
-{
-  config,
-  lib,
-  pkgs,
-  modulesPath,
-  user,
-  ...
-}:
+{ config, lib, pkgs, modulesPath, user, ... }:
 
 {
-  imports = [
-    (modulesPath + "/installer/scan/not-detected.nix")
-  ];
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
-  boot.initrd.availableKernelModules = [
-    "xhci_pci"
-    "thunderbolt"
-    "nvme"
-    "usb_storage"
-    "sd_mod"
-  ];
-  boot.initrd.kernelModules = [ ];
+  # --- Boot ---
+  boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" ];
   boot.kernelModules = [ "kvm-intel" ];
-  boot.extraModulePackages = [ ];
 
+  # --- File System ---
   fileSystems."/vault" = {
-    device = "/dev/disk/by-uuid/2aee802b-4bf2-4bf5-83d4-28f7896a4967";
-    fsType = "ext4";
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@vault" "compress=zstd:1" "noatime" ];
     neededForBoot = true;
   };
 
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@nix" "compress=zstd:1" "noatime" "nodev" "nosuid" ];
+    neededForBoot = true;
+  };
+
+  fileSystems."/kanso" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@kanso" "compress=zstd:1" "noatime" ];
+    neededForBoot = true;
+  };
+
+  fileSystems."/vault/core" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@core" "compress=zstd:1" "noatime" ];
+  };
+
+  # --- Root in RAM ---
+  fileSystems."/" = {
+    device = "tmpfs";
+    fsType = "tmpfs";
+    options = [ "mode=755" "size=8G" ];
+  };
+
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-label/BOOT";
+    fsType = "vfat";
+    options = [ "fmask=0022" "dmask=0022" ];
+  };
+
+  
   environment.persistence."/vault" = {
     hideMounts = true;
     directories = [
@@ -37,49 +57,12 @@
       "/etc/nixos"
     ];
 
-    files = [
-      "/etc/machine-id"
-    ];
+    files = [ "/etc/machine-id" ];
 
     users.${user} = {
-      directories = [
-        ".ssh"
-        "Desktop"
-      ];
+      directories = [ ".ssh" "Desktop" ];
     };
   };
-
-  fileSystems."/nix" = {
-    device = "/vault/nix";
-    options = [ "nodev" "nosuid" "bind" ];
-    neededForBoot = true;
-  };
-
-  fileSystems."/kanso" = {
-    device = "/vault/kanso";
-    options = [ "bind" ];
-    neededForBoot = true;
-  };
-
-  fileSystems."/" = {
-    device = "tmpfs";
-    fsType = "tmpfs";
-    options = [
-      "mode=755"
-      "size=8G"
-    ];
-  };
-
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/E767-433C";
-    fsType = "vfat";
-    options = [
-      "fmask=0022"
-      "dmask=0022"
-    ];
-  };
-
-  swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

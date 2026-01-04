@@ -1,0 +1,58 @@
+{
+    "layer": "top",
+    "position": "top",
+    "height": 30,
+    "spacing": 0,
+
+    "modules-left": ["hyprland/workspaces"],
+    "modules-center": ["clock"],
+    "modules-right": ["network", "wireplumber", "battery"],
+    
+    "clock": {
+        "format": "{:%b %d  %H:%M}",
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "hyprland/workspaces": {
+        "format": "",
+	"disable-scroll": true,
+	"all-outputs": true,
+	"on-click": "activate",
+	"persistent-workspaces": {
+            "*": 5
+        }
+    },
+    
+    "battery": {
+        "interval": 60,
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{icon}",
+        "format-charging": "󰂄",
+        "format-plugged": "󰚥",
+        "format-icons": ["󰂃", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "tooltip-format": "{timeTo}"
+    },
+
+    "wireplumber": {
+        "format": "{icon} ",
+        "format-muted": "󰖁 ",
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "format-icons": ["󰕿", "󰖀", "󰕾"],
+    },
+   
+    "network": {
+        "format-wifi": "󰖩 ",
+        "format-disconnected": "󰖪 ",
+	"tooltip-format": "{essid} [{ipaddr}]",
+	"on-click": "kitty --single-instance -e impala"
+    },
+
+    "custom/power": {
+        "format": "⏻ ",
+        "on-click": "shutdown now",
+        "tooltip-format": "Power Off"
+    }
+}

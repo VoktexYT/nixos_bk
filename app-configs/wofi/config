@@ -1,0 +1,14 @@
+hide_search=true
+mode=drun
+show=drun
+prompt=
+location=bottom_right
+x=-20
+y=-100
+width=300
+lines=10
+filter_rate=100
+allow_images=false
+insensitive=true
+no_actions=true
+

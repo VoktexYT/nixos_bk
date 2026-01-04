@@ -1,0 +1,24 @@
+layout {
+    default_tab_template {
+        children
+        pane size=1 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    tab name="Explorateur" focus=true {
+        pane split_direction="vertical" {
+            pane name="Structure" size="20%" command="nnn" {
+                args "-a" "-H" 
+            }
+
+            pane split_direction="horizontal" size="80%" {
+                pane name="Editor" command="hx" {
+                    args "."
+                    focus true
+                }
+                pane name="Terminal" size="25%"
+            }
+        }
+    }
+}

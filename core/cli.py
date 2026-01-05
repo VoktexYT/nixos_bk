@@ -32,7 +32,7 @@ def main():
     arg_val = args[0] if args and args[0] != "class::clear" else None
 
     commands = {
-        "snapshot":        lambda: ops.snapshot(clear_screen=clear_arg),
+        "snapshot":        lambda: ops.snapshot(arg_val, clear_screen=clear_arg),
         "rebuild":         lambda: ops.rebuild(clear_screen=clear_arg),
         "rollback":        lambda: ops.rollback(clear_screen=clear_arg),
         "refresh-desktop": lambda: ops.refresh_desktop(),

@@ -21,12 +21,13 @@ def code_editor():
 
 # --- SYSTEM OPERATIONS ---
 
-def snapshot(clear_screen=False):
+def snapshot(name=None, clear_screen=False):
     sudo_auth()
     if clear_screen:
         os.system("clear")
-    
-    name = gum_input("Snapshot Name...")
+
+    if not name:
+        name = gum_input("Snapshot Name...")
 
     if not name:
         print("Operation canceled...")

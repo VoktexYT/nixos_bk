@@ -9,23 +9,19 @@
         gcc       
         git
         gnumake  
-        nodejs  
-        python3
         curl       
         unzip     
         wl-clipboard 
         slurp
-        php 
         fastfetch  
         chafa
         gum
         eza
         bat
-        bash
+        python3
         
         # --- Graphical Apps ---
         firefox     
-        qutebrowser 
 
         # --- TUI App ---
         yazi
@@ -34,6 +30,7 @@
         gdu
         impala
         helix
+        zellij
 
         ## Youtube
         ytfzf 
@@ -46,7 +43,6 @@
         hyprpaper
         grim
         bibata-cursors
-        zellij
     ];
 
 

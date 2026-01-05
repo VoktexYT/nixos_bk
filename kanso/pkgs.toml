@@ -1,0 +1,29 @@
+########################################
+[kpm]
+
+########################################
+[nixpkgs]
+allowUnfree = true
+
+packages = [
+    "kitty", "gcc", "git", "gnumake", "curl", "unzip", 
+    "wl-clipboard", "slurp", "fastfetch", "chafa", "gum", 
+    "eza", "bat", "firefox", "yazi", "calcurse", "btop", 
+    "gdu", "impala", "helix", "zellij", "ytfzf", "yt-dlp", 
+    "mpv", "jq", "waybar", "hyprpaper", "grim", "bibata-cursors"
+]
+
+[nixpkgs.features]
+fish = true
+zoxide = true
+nix-ld = true
+
+########################################
+[flatpak]
+
+#####################################
+[aur]
+
+#####################################
+[appimage]
+

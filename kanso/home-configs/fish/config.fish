@@ -30,7 +30,7 @@ if status is-interactive
         end
 
         set_color FE8019
-        echo -n "> "
+        echo -n " |> "
 
         set_color normal
     end

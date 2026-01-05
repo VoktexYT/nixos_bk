@@ -17,6 +17,7 @@
         ./nix-modules/kanso-os-system.nix
         ./nix-modules/kanso-cli.nix
         ./nix-modules/kanso-pannel.nix
+        ./nix-modules/ram.nix
     ];
     
     nix.settings.experimental-features = [ "nix-command" "flakes" ];

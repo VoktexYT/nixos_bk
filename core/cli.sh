@@ -1,185 +1,74 @@
+#!/bin/sh
+
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+. "$ROOT_DIR/scripts/utils/print.sh"
+. "$ROOT_DIR/scripts/utils/loading_exec.sh"
+. "$ROOT_DIR/scripts/snapshot.sh"
+. "$ROOT_DIR/scripts/rebuild.sh"
+. "$ROOT_DIR/scripts/rollback.sh"
+. "$ROOT_DIR/scripts/refresh-desktop.sh"
+. "$ROOT_DIR/scripts/hard-clean.sh"
+. "$ROOT_DIR/scripts/rewind.sh"
+
+. "$ROOT_DIR/apps/watch-youtube.sh"
+. "$ROOT_DIR/apps/code-editor.sh"
+
 export GUM_CHOOSE_CURSOR_FOREGROUND="#89b4fa"
 export GUM_CHOOSE_HEADER_FOREGROUND="#D65D0E"
 
-BG_ORANGE="#FE8019"
-FG_DARK="#282828"
-GRAY="#928374"
-TEXT_LIGHT="#EBDBB2"
+export BG_ORANGE="#FE8019"
+export FG_DARK="#282828"
+export GRAY="#928374"
+export BEIGE_GRUV="#EBDBB2"
 
 menu_choose() {
-     gum choose --cursor="" --header=" " \
-         --selected.foreground="$COLOR_SELECTED" --selected.bold \
-         --item.foreground="$COLOR_ITEM" "$@"
- }
-
-loading_exec() {
-    local title="$1"
-    local cmd="$2"
-    local persist="$3"
-
-    local color_title="\033[38;2;211;134;155m" 
-    local color_done="\033[0;32m"              
-    local color_reset="\033[0m"
-
-    if [ "$persist" = "show" ]; then
-        echo -ne "${color_title}$title${color_reset}"
-
-        gum spin \
-            --spinner dot \
-            --spinner.foreground="#FE8019" \
-            --title "$title" \
-            --title.foreground="#d3869b" -- \
-            bash -c "$cmd"
-
-        echo -e "\r${color_title}$title ${color_done}(DONE)${color_reset}"
-    else
-        gum spin \
-            --spinner dot \
-            --spinner.foreground="#FE8019" \
-            --title "$title" \
-            --title.foreground="#d3869b" -- \
-            bash -c "$cmd"
-    fi
-}
-
-case "$1" in
-rebuild)
-    sudo -v
-    [[ "$2" == "clear" ]] && clear
-
-    LOG=$(mktemp)
-
-    loading_exec "Rebuild system..." "sudo nixos-rebuild switch --flake /vault/etc/nixos#voktex --impure > /dev/null 2> $LOG"
-
-    if [ $? -eq 0 ]; then
-        echo -e "\033[0;32mOK\033[0m"
-        rm "$LOG"
-    else
-        echo -e "\033[0;31mERROR :\033[0m"
-        cat "$LOG" | gum format -t code --language bash
-        rm "$LOG"
-        exit 1
-    fi
-    ;;
-
-refresh-desktop)
-    loading_exec "Kill waybar process..." "pkill waybar" "show"
-    loading_exec "Create waybar process..." "hyprctl dispatch exec waybar" "show"
-    loading_exec "Reload Hyprland..." "hyprctl reload" "show"
-
-    if [ $? -eq 0 ]; then
-        echo -e "\033[0;32mOK\033[0m"
-    fi
-    ;;
-
-hard-clean)
-    sudo -v
-    [[ "$2" == "clear" ]] && clear
-
-    if gum confirm \
-        --prompt.foreground="$BEIGE_GRUV" \
-        --selected.background="$BG_ORANGE" \
-        --selected.foreground="$FG_DARK" \
-        --unselected.background="$FG_DARK" \
-        --unselected.foreground="$GRAY" \
-        --affirmative "Yes" \
-        --negative "No" \
-        "This will delete all previous system generations. Are you sure?"; then
-                
-        loading_exec "Cleaning user generations..." "nix-env --delete-generations old" "show"
-        loading_exec "Cleaning system generations and running garbage collector..." "sudo nix-collect-garbage -d" "show"
-        loading_exec "Updating boot menu..." "sudo /run/current-system/bin/switch-to-configuration boot" "show"
-        loading_exec "Optimizing the nix store..." "nix-store --optimise" "show"
-
-        if [ $? -eq 0 ]; then
-            echo -e "\033[0;32mOK\033[0m"
-        fi
-    else
-        echo "Operation cancelled."
-        exit 0
-    fi
-    ;;
-
-try)
-    nix-shell -p $2
-    ;;
-
-watch)
-    if [ -n "$2" ]; then
-        QUERY="$2"
-    else
-        QUERY=$(gum input --placeholder "Search on YouTube..." \
-            --width 50 \
-            --prompt.foreground "#ebdbb2" \
-            --cursor.foreground "#fe8019")
-    fi
-
-    if [ -n "$QUERY" ]; then
-        ytfzf -t --video-pref="480p" "$QUERY"
-    else
-        echo -e "\033[0;31mSearch cancelled.\033[0m"
-    fi
-    ;;
-
-code)
-    zellij delete-all-sessions -y 
-    zellij --layout dev
-    ;;
-
-rollback)
-    sudo -v
-    [[ "$2" == "clear" ]] && clear
-
-    export COLORTERM=truecolor
-
-    GENERATIONS=$(sudo nix-env --list-generations --profile /nix/var/nix/profiles/system)
-
-    ID=$(echo "$GENERATIONS" | gum choose \
+    gum choose \
         --cursor="" \
-        --header="Select the generation to restore:" \
-        --header.foreground="#fabd2f" \
+        --header="$1" \
         --selected.foreground="#83a598" \
         --selected.bold \
-        --item.foreground="#83a598" | awk '{print $1}')
+        --item.foreground="#ebdbb2" \
+        "${@:2}"
+}
 
-    [[ -z "$ID" ]] && echo -e "\033[0;31mCancelled.\033[0m" && exit 0
+if [ -z "$1" ]; then
+    "$0" help
+    exit 0
+fi
 
-    if gum confirm \
-        --prompt.foreground="#ebdbb2" \
-        --selected.background="#fe8019" \
-        --selected.foreground="#282828" \
-        --unselected.background="#3c3836" \
-        --unselected.foreground="#a89984" \
-        --affirmative "Restore" \
-        --negative "Cancel" \
-        "Are you sure you want to restore generation $ID?"; then
+COMMAND="$1"
+shift
 
-        loading_exec "Symlink Management..." \
-            "sudo nix-env --profile /nix/var/nix/profiles/system --switch-generation $ID" "show"
+case "$COMMAND" in
+    snapshot)        exec_snapshot "$@" ;;
+    rebuild)         exec_rebuild "$@" ;;
+    rollback)        exec_rollback "$@" ;;
+    refresh-desktop) exec_refresh_desktop "$@" ;;
+    hard-clean)      exec_hard_clean "$@" ;;
+    watch-youtube)   exec_watch_youtube "$@" ;;
+    code-editor)     exec_code_editor "$@" ;;
+    rewind)          exec_rewind "$@" ;;
+    
+    help|--help|-h)
+        echo "Kanso CLI - System Management"
+        echo ""
+        echo "Usage: kanso <command> [arguments]"
+        echo ""
+        echo "Commands:"
+        echo "  snapshot         Create a config snapshot (accepts name or 'class::clear')"
+        echo "  rebuild          Rebuild the system configuration"
+        echo "  refresh-desktop  Restart Waybar and reload Hyprland"
+        echo "  hard-clean       Deep clean Nix generations and Git history"
+        echo "  watch-youtube    Search and play YouTube videos via ytfzf"
+        echo "  rewind           Interactive Git restore for /vault"
+        ;;
 
-        loading_exec "System Rollback..." \
-            "sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch" "show"
-
-        if [ $? -eq 0 ]; then
-            echo -e "\033[0;32mOK\033[0m"
-        else
-            echo -e "\033[0;31mERROR\033[0m"
-        fi
-    else
-        echo -e "\n\033[0;33mOperation cancelled\033[0m"
-    fi
-    ;;
-
-help)
-    echo "kanso <args>"
-    echo "- rebuild"
-    echo "- refresh-desktop"
-    echo "- hard-clean"
-    echo "- try <string = package name>"
-    echo "- watch <string = YouTube search keyword>"
-    ;;
-
-*)
-    echo -e "\033[0;31mINVALID KANSO ARGUMENT '$1'\nWrite 'kanso help' for more\033[0m"
-    ;;
+    *)
+        gum style \
+            --foreground "#fb4934" \
+"Error: Invalid argument '$COMMAND'.
+Type 'kanso help' for available commands."
+        exit 1
+        ;;
 esac

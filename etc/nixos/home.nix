@@ -31,9 +31,16 @@
 
     programs.git = {
         enable = true;
-        settings.user = {
-            name = user;
-            email = "ubguertin@gmail.com";
+        userName = user;
+        userEmail = "ubguertin@gmail.com";
+        extraConfig = {
+            safe = {
+                directory = "*";
+            };
+
+            core = {
+                sharedRepository = "world";
+            };
         };
     };
 

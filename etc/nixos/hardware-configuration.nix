@@ -23,6 +23,11 @@
   };
 
   fileSystems."/kanso" = {
+    device = "/vault/kanso";
+    options = [ "bind" ];
+  };
+
+  fileSystems."/vault/kanso" = {
     device = "/dev/disk/by-label/vault";
     fsType = "btrfs";
     options = [ "subvol=@kanso" "compress=zstd:1" "noatime" ];

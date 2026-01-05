@@ -19,20 +19,19 @@ draw_title() {
 }
 
 menu_choose() {
-    gum choose --cursor="" --header=" " \
+    gum choose --cursor="" --header=" " --height=10 \
         --selected.foreground="$COLOR_SELECTED" --selected.bold \
         --item.foreground="$COLOR_ITEM" "$@"
 }
 
 launch_app() {
     local cmd="$1"
-    local mode="$2"
+    kitty --class="app_center" -o background="#000" -e $cmd
+}
 
-    if [ "$mode" == "hold" ]; then
-        kitty --class="app_center" -o background="#000" sh -c "$cmd; read -n 1 -s"
-    else
-        kitty --class="app_center" -o background="#000" -e $cmd
-    fi
+launch_program() {
+    local cmd="$1"
+    kitty --class="app_center" -o background="#000" sh -c "$cmd; read -n 1 -s"
 }
 
 # --- EXECUTION ---
@@ -43,24 +42,26 @@ MAIN_CHOICE=$(menu_choose "System" "Applications" "Monitor" "Network" "Power" "E
 case $MAIN_CHOICE in
 
 "Applications")
-    APP_CHOICE=$(menu_choose "Calendar" "Disk Manager" "File Explorer" "YouTube" "Kanso Code")
+    APP_CHOICE=$(menu_choose "Calendar" "Disk Manager" "File Explorer" "Kanso YouTube" "Kanso Code Editor")
     case $APP_CHOICE in
-    "Calendar") launch_app "calcurse" ;;
-    "Disk Manager") launch_app "gdu" ;;
-    "File Explorer") launch_app "yazi" ;;
-    "YouTube") launch_app "kanso watch" ;;
-    "Kanso Code") launch_app "kanso code" ;;
+        "Calendar")          launch_app "calcurse" ;;
+        "Disk Manager")      launch_app "gdu" ;;
+        "File Explorer")     launch_app "yazi" ;;
+        "Kanso YouTube")     launch_app "kanso watch-youtube" ;;
+        "Kanso Code Editor") launch_app "kanso code-editor" ;;
     esac
     ;;
 
 "System")
-    SYS_CHOICE=$(menu_choose "Rebuild" "Hard Clean" "Refresh Desktop" "Rollback" "Information")
+    SYS_CHOICE=$(menu_choose "Information" "Rebuild" "Rollback" "Refresh Desktop" "Create Snapshot" "Rewind Snapshot" "Hard Clean")
     case $SYS_CHOICE in
-    "Rebuild") launch_app "kanso rebuild clear" "hold" ;;
-    "Hard Clean") launch_app "kanso hard-clean clear" "hold" ;;
-    "Refresh Desktop") launch_app "kanso refresh-desktop" "hold" ;;
-    "Information") launch_app "fastfetch" "hold" ;;
-    "Rollback") launch_app "kanso rollback clear" "hold" ;;
+        "Rebuild")         launch_program "kanso rebuild clear" ;;
+        "Rollback")        launch_program "kanso rollback clear" ;;
+        "Create Snapshot") launch_program "kanso snapshot class::clear" ;;
+        "Rewind Snapshot") launch_program "kanso rewind clear" ;;
+        "Hard Clean")      launch_program "kanso hard-clean clear" ;;
+        "Refresh Desktop") launch_program "kanso refresh-desktop" ;;
+        "Information")     launch_program "fastfetch" ;;
     esac
     ;;
 
@@ -69,9 +70,10 @@ case $MAIN_CHOICE in
 "Monitor") launch_app "btop" ;;
 
 "Power")
-    PWR_CHOICE=$(menu_choose "Reboot" "Shutdown")
+    PWR_CHOICE=$(menu_choose "Reboot" "Shutdown" "Logout" )
     [ "$PWR_CHOICE" == "Reboot" ] && reboot
     [ "$PWR_CHOICE" == "Shutdown" ] && shutdown now
+    [ "$PWR_CHOICE" == "Logout" ] && hyprctl dispatch exit
     ;;
 
 "Exit") exit 0 ;;

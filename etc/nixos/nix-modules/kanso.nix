@@ -1,11 +1,16 @@
 { pkgs, lib, ... }:
 
 let
+  python3Env = pkgs.python3.withPackages (ps: with ps; [ 
+    rtoml 
+  ]);
+
   kanso-cli = pkgs.stdenv.mkDerivation {
     name = "kanso";
     src = /vault/core; 
 
-    buildInputs = [ pkgs.python3 ];
+    buildInputs = [ python3Env ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
 
     installPhase = ''
         mkdir -p $out/bin
@@ -15,7 +20,7 @@ let
 
         echo "#!${pkgs.bash}/bin/bash" > $out/bin/.kanso-panel-logic
         echo "export PYTHONPATH=$out/share/kanso:\$PYTHONPATH" >> $out/bin/.kanso-panel-logic
-        echo "${pkgs.python3}/bin/python3 $out/share/kanso/core/panel.py \"\$@\"" >> $out/bin/.kanso-panel-logic
+        echo "${python3Env}/bin/python3 $out/share/kanso/core/panel.py \"\$@\"" >> $out/bin/.kanso-panel-logic
         chmod +x $out/bin/.kanso-panel-logic
 
         echo "#!${pkgs.bash}/bin/bash" > $out/bin/kanso-panel
@@ -24,7 +29,7 @@ let
 
         echo "#!${pkgs.bash}/bin/bash" > $out/bin/kanso
         echo "export PYTHONPATH=$out/share/kanso:\$PYTHONPATH" >> $out/bin/kanso
-        echo "${pkgs.python3}/bin/python3 $out/share/kanso/core/cli.py \"\$@\"" >> $out/bin/kanso
+        echo "${python3Env}/bin/python3 $out/share/kanso/core/cli.py \"\$@\"" >> $out/bin/kanso
         chmod +x $out/bin/kanso
     '';
   };

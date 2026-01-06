@@ -1,0 +1,28 @@
+generation-label = 'Install:cbonsai'
+
+[kpm]
+
+[nixpkgs]
+packages = [
+    'chafa',
+    'eza',
+    'bat',
+    'firefox',
+    'yazi',
+    'calcurse',
+    'btop',
+    'gdu',
+    'impala',
+    'helix',
+    'zellij',
+    'ytfzf',
+    'yt-dlp',
+    'mpv',
+    'cbonsai',
+]
+
+[flatpak]
+
+[aur]
+
+[appimage]

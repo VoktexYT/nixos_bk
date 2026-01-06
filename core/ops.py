@@ -1,25 +1,161 @@
 import os
 import sys
 import subprocess
+import rtoml
+import tomllib
+import tempfile
+import signal
+import shutil
+from datetime import datetime
 from core.utils import *
+from itertools import zip_longest
 
-# --- APPLICATIONS ---
 
-def watch_youtube(query=None):
-    if not query:
-        query = gum_input("YouTube Search...")
-        if not query:
-            print("Search cancelled.")
-            return
+PKGS_PATH = "/vault/kanso/settings/packages.toml"
+BACKUP_PATH = PKGS_PATH + ".bak"
 
-    os.system("clear")
-    cmd = f'ytfzf -t --video-pref="480p" "{query}"'
-    os.system(cmd)
+def safe_write_toml(path, data):
+    with tempfile.NamedTemporaryFile('w', delete=False) as tmp:
+        tmp_path = tmp.name
+        try:
+            rtoml.dump(data, tmp, pretty=True)
+            tmp.flush()
+            os.fsync(tmp.fileno())
+            tmp.close()
+            
+            loading_exec(
+                f"Applying changes to {os.path.basename(path)}...",
+                f"sudo mv {tmp_path} {path} && sudo chmod 644 {path}"
+            )
+        except Exception as e:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+            raise e
 
-def code_editor():
-    subprocess.run(["zellij", "--layout", "dev"])
+def restore_backup(signum=None, frame=None):
+    if os.path.exists(BACKUP_PATH):
+        loading_exec(f"Restoring backup '{BACKUP_PATH}'...", f"sudo cp {BACKUP_PATH} {PKGS_PATH} && sudo rm {BACKUP_PATH}")
+    if signum:
+        sys.exit(1)
 
 # --- SYSTEM OPERATIONS ---
+def list_pkgs(clear_screen=False):
+    if clear_screen:
+        os.system("clear")
+
+    try:
+        with open(PKGS_PATH, "rb") as f:
+            data = tomllib.load(f)
+        
+        excluded_keys = ["generation-label", "kpm"]
+        headers = [h for h in data.keys() if h not in excluded_keys]
+        
+        columns = [data[h].get("packages", []) if isinstance(data[h], dict) else [] for h in headers]
+        col_width = 18
+
+        header_line = "".join([f"{h.capitalize():<{col_width}}" for h in headers])
+        print(header_line)
+        print("-" * (len(headers) * col_width))
+
+        for row in zip_longest(*columns, fillvalue=""):
+            row_str = "".join([f"{str(pkg):<{col_width}}" for pkg in row])
+            print(row_str)
+            
+    except Exception as e:
+        print(f"Error listing packages: {e}")
+
+
+def update_packages(isInstall, clear_screen=False, **queries):
+    sudo_auth()
+    if clear_screen:
+        os.system("clear")
+        
+    if os.path.exists(BACKUP_PATH):
+        restore_backup()
+
+    queries = queries.get("queries")
+    if not queries: return
+
+    for sig in [signal.SIGTERM, signal.SIGHUP, signal.SIGINT]:
+        signal.signal(sig, restore_backup)
+
+    try:
+        with open(PKGS_PATH, "rb") as f:
+            data = tomllib.load(f)
+
+        packages = data.get("nixpkgs", {}).get("packages", [])
+        updated_packages = []
+
+        for query in queries:
+            query_values = query.split(":")
+
+            if len(query_values) != 2:
+                print(f"SyntaxError: '{query}' do not respect format '<source>:<package>'")
+                print_failed()
+                return
+            
+            source, package = query_values
+
+            if source not in data:
+                print(f"ValueError: The source '{source}' does not exist")
+                print_failed()
+                return
+            
+            if isInstall: 
+                if package not in packages:
+                    packages.append(package)
+                else:
+                    print(f"Package '{package}' is already installed!")
+                    print_failed()
+                    return
+            else: 
+                if package in packages:
+                    packages.remove(package)
+                else:
+                    print(f"Package '{package}' is not installed!")
+                    print_failed()
+                    return
+
+            updated_packages.append(package)
+
+        
+        state_message = "Install" if isInstall else "Remove"
+        format_package_names = '.'.join(updated_packages)
+        generation_label_message = f"{state_message}:{format_package_names}"
+
+        loading_exec(f"Backing up {PKGS_PATH}...", f"sudo cp {PKGS_PATH} {BACKUP_PATH}")
+        
+        data["nixpkgs"]["packages"] = packages
+        data["generation-label"] = generation_label_message
+
+        safe_write_toml(PKGS_PATH, data)
+        
+        loading_exec(f"{state_message} {format_package_names}...", "kanso rebuild")
+        loading_exec(f"Cleaning backup...", f"sudo rm {BACKUP_PATH}")
+                
+        print_ok()
+
+    except (KeyboardInterrupt, Exception) as e:
+        restore_backup()
+        if not isinstance(e, KeyboardInterrupt):
+            print(f"ERROR: {e}")
+        print_failed()
+       
+def sync_pkgs(clear_screen=False):
+    sudo_auth()
+    if clear_screen:
+        os.system("clear")
+
+    with open(PKGS_PATH, "rb") as f:
+        data = tomllib.load(f)
+
+    loading_exec("Syncing kpm...", "echo kpm")
+    loading_exec("Syncing nixpkgs...", "kanso rebuild")
+    loading_exec("Syncing flatpak...", "echo flatpak")
+    loading_exec("Syncing aur...", "echo aur")
+    loading_exec("Syncing appimage", "echo appimage")
+    print_ok()
+
 
 def snapshot(name=None, clear_screen=False):
     sudo_auth()
@@ -160,3 +296,21 @@ def hard_clean(clear_screen=False):
 
     snapshot("STABLE")
     print_ok()
+
+
+
+# --- APPLICATIONS ---
+def watch_youtube(query=None):
+    if not query:
+        query = gum_input("YouTube Search...")
+        if not query:
+            print("Search cancelled.")
+            return
+
+    os.system("clear")
+    cmd = f'ytfzf -t --video-pref="480p" "{query}"'
+    os.system(cmd)
+
+def code_editor():
+    subprocess.run(["zellij", "--layout", "dev"])
+

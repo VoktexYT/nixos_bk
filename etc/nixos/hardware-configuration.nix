@@ -8,39 +8,6 @@
   boot.kernelModules = [ "kvm-intel" ];
 
   # --- File System ---
-  fileSystems."/vault" = {
-    device = "/dev/disk/by-label/vault";
-    fsType = "btrfs";
-    options = [ "subvol=@vault" "compress=zstd:1" "noatime" ];
-    neededForBoot = true;
-  };
-
-  fileSystems."/nix" = {
-    device = "/dev/disk/by-label/vault";
-    fsType = "btrfs";
-    options = [ "subvol=@nix" "compress=zstd:1" "noatime" "nodev" "nosuid" ];
-    neededForBoot = true;
-  };
-
-  fileSystems."/kanso" = {
-    device = "/vault/kanso";
-    options = [ "bind" ];
-  };
-
-  fileSystems."/vault/kanso" = {
-    device = "/dev/disk/by-label/vault";
-    fsType = "btrfs";
-    options = [ "subvol=@kanso" "compress=zstd:1" "noatime" ];
-    neededForBoot = true;
-  };
-
-  fileSystems."/vault/core" = {
-    device = "/dev/disk/by-label/vault";
-    fsType = "btrfs";
-    options = [ "subvol=@core" "compress=zstd:1" "noatime" ];
-  };
-
-  # --- Root in RAM ---
   fileSystems."/" = {
     device = "tmpfs";
     fsType = "tmpfs";
@@ -52,20 +19,53 @@
     fsType = "vfat";
     options = [ "fmask=0022" "dmask=0022" ];
   };
-
   
-  environment.persistence."/vault" = {
+  fileSystems."/kanso" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@kanso" "compress=zstd:1" "noatime" ];
+  };
+
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@nix" "compress=zstd:1" "noatime" ];
+    neededForBoot = true;
+  };
+  
+  fileSystems."/vault" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@vault" "compress=zstd:1" "noatime" ];
+    neededForBoot = true;
+  };
+  
+  fileSystems."/persist" = {
+    device = "/dev/disk/by-label/vault";
+    fsType = "btrfs";
+    options = [ "subvol=@persist" "compress=zstd:1" "noatime" ];
+    neededForBoot = true;
+  };
+
+  # -- persistence  
+  environment.persistence."/persist" = {
     hideMounts = true;
+    
     directories = [
       "/var/lib/iwd"
       "/var/lib/nixos"
-      "/etc/nixos"
+      "/var/log"
     ];
 
-    files = [ "/etc/machine-id" ];
+    files = [
+      "/etc/machine-id"
+    ];
 
     users.${user} = {
-      directories = [ ".ssh" "Desktop" ];
+      directories = [
+        "Desktop"
+        ".cache"
+      ];
     };
   };
 

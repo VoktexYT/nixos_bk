@@ -1,68 +1,45 @@
 { config, pkgs, ... }:
 
-{
-    environment.systemPackages = with pkgs; [
-        # --- Terimnal ---
-        kitty
+let
+  tomlPath = /vault/kanso/pkgs.toml;
+  
+  userCfg = builtins.fromTOML (builtins.readFile tomlPath);
+  
+  userPackages = map (name: pkgs.${name}) userCfg.nixpkgs.packages;
 
-        # --- Development Tools ---
-        gcc       
-        git
-        gnumake  
-        curl       
-        unzip     
-        wl-clipboard 
-        slurp
-        fastfetch  
-        chafa
-        gum
-        eza
-        bat
-        python3
-        
-        # --- Graphical Apps ---
-        firefox     
+  kansoCore = with pkgs; [
+    kitty
+    fastfetch
+    waybar
+    wayland
+    hyprpaper
+    wl-clipboard
+    gum
+    python3
+    git
+    curl
+    unzip
+    grim
+    slurp
+    bibata-cursors
+  ];
 
-        # --- TUI App ---
-        yazi
-        calcurse
-        btop
-        gdu
-        impala
-        helix
-        zellij
+in {
+  environment.systemPackages = kansoCore ++ userPackages;
 
-        ## Youtube
-        ytfzf 
-        yt-dlp 
-        mpv 
-        jq
+  programs.fish.enable = true;
+  programs.zoxide.enable = true; 
+  nixpkgs.config.allowUnfree = true;
 
-        # -- Windows Components --
-        waybar
-        hyprpaper
-        grim
-        bibata-cursors
-    ];
-
-
-    # =================================================================
-    # PROGRAMS & COMPATIBILITY
-    # =================================================================
-    programs.fish.enable = true;
-    programs.zoxide.enable = true; 
-
-    programs.nix-ld.enable = true;
-    programs.nix-ld.libraries = with pkgs; [
-        stdenv.cc.cc
-        zlib
-        fuse3
-        icu
-        nss
-        openssl
-        curl
-        expat
-    ];
-
-    nixpkgs.config.allowUnfree = true;
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    stdenv.cc.cc zlib glib openssl icu nss nspr curl expat fuse3
+    libGL libxkbcommon wayland mesa libdrm
+    xorg.libX11 xorg.libXcursor xorg.libXrandr xorg.libXi
+    xorg.libXext xorg.libXcomposite xorg.libXdamage xorg.libXfixes
+    xorg.libXrender xorg.libXtst cairo pango atk at-spi2-atk
+    gdk-pixbuf gtk3 libdbusmenu-gtk3 libpulseaudio alsa-lib
+    dbus libusb1
+  ];
 }
+

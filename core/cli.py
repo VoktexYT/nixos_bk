@@ -32,14 +32,24 @@ def main():
     arg_val = args[0] if args and args[0] != "class::clear" else None
 
     commands = {
-        "snapshot":        lambda: ops.snapshot(arg_val, clear_screen=clear_arg),
+        "add":             lambda: ops.update_packages(isInstall=True, clear_screen=clear_arg, queries=args),
+        "rm":              lambda: ops.update_packages(isInstall=False, clear_screen=clear_arg, queries=args),
+
+        "sync-pkgs":       lambda: ops.sync_pkgs(clear_screen=clear_arg),
+        "list-pkgs":       lambda: ops.list_pkgs(clear_screen=clear_arg),
+        
+        "snapshot":        lambda: ops.snapshot(arg_val, clear_screen=clear_arg),        
+        "rewind":          lambda: ops.rewind(clear_screen=clear_arg),
+
         "rebuild":         lambda: ops.rebuild(clear_screen=clear_arg),
         "rollback":        lambda: ops.rollback(clear_screen=clear_arg),
+        
         "refresh-desktop": lambda: ops.refresh_desktop(),
+
         "hard-clean":      lambda: ops.hard_clean(clear_screen=clear_arg),
         "watch-youtube":   lambda: ops.watch_youtube(arg_val),
         "code-editor":     lambda: ops.code_editor(),
-        "rewind":          lambda: ops.rewind(clear_screen=clear_arg),
+
         "help":            show_help,
     }
 
